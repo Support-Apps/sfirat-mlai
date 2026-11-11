@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דו"ח ספירת מלאי 2025 - יוחנן ליפשיץ ושות' בע"מ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Assistant', sans-serif;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        /* Print styles */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                padding: 0 !important;
+            }
+            .page-container {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            input, select, textarea {
+                border: none !important;
+                background: transparent !important;
+                appearance: none;
+                -webkit-appearance: none;
+            }
+            .border-print-black {
+                border-color: #000000 !important;
+            }
+            table {
+                page-break-inside: auto;
+            }
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+        }
+
+        /* Input styling for seamless look */
+        .editable-input {
+            border: 1px dashed transparent;
+            transition: border-color 0.2s;
+        }
+        .editable-input:hover, .editable-input:focus {
+            border-color: #000000;
+            background-color: #f9f9f9;
+            outline: none;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-6xl mx-auto bg-white border border-black p-6 md:p-10 page-container">
+        
+        <!-- Top Toolbar (Non-printable) -->
+        <div class="no-print mb-8 pb-4 border-b border-black flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <button onclick="window.print()" class="px-5 py-2.5 bg-black text-white font-bold rounded hover:bg-gray-800 transition flex items-center gap-2">
+                    <i class="fas fa-print"></i> הדפס דו"ח
+                </button>
+                <button onclick="addNewArea()" class="px-4 py-2.5 border border-black font-semibold rounded hover:bg-gray-100 transition flex items-center gap-2">
+                    <i class="fas fa-plus"></i> הוסף אזור חדש
+                </button>
+                <button onclick="resetData()" class="px-4 py-2.5 border border-gray-400 text-gray-700 font-semibold rounded hover:bg-gray-100 transition flex items-center gap-2">
+                    <i class="fas fa-undo"></i> איפוס לנתוני מקור
+                </button>
+            </div>
+            <div class="text-sm font-semibold">
+                מצב תצוגה: <span class="bg-black text-white px-2 py-1 rounded text-xs">עריכה וספירה</span>
+            </div>
+        </div>
+
+        <!-- Document Header -->
+        <header class="border-b-2 border-black pb-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-black tracking-tight mb-1">
+                        יוחנן ליפשיץ ושות' בע"מ
+                    </h1>
+                    <h2 class="text-xl font-bold text-gray-900">
+                        דו"ח ספירת מלאי לשנת המס 2025
+                    </h2>
+                </div>
+                <div class="text-left font-medium text-sm space-y-1 w-full md:w-auto border-t md:border-t-0 pt-3 md:pt-0 border-gray-200">
+                    <div><span class="font-bold">תאריך הדו"ח:</span> <span id="currentDateDisplay">11 בנובמבר 2026</span></div>
+                    <div><span class="font-bold">מנהל:</span> <input type="text" id="managerName" value="ירון שמואל" class="editable-input px-1 font-semibold text-black rounded"></div>
+                    <div><span class="font-bold">סטטוס:</span> ספירה פיזית מאושרת</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Total Summary Card -->
+        <div class="border-2 border-black p-5 mb-8 flex flex-col md:flex-row justify-between items-center bg-white">
+            <div>
+                <span class="text-lg font-bold block mb-1">סה"כ ערך מלאי כולל (כל האזורים)</span>
+                <span class="text-sm text-gray-700">מבוסס על ריכוז הנתונים והאזורים המעודכנים</span>
+            </div>
+            <div class="text-3xl md:text-4xl font-black text-black mt-3 md:mt-0">
+                <span id="grandTotalDisplay">0.00</span> ₪
+            </div>
+        </div>
+
+        <!-- Horizontal Flow Visualizer (Scrollable RTL flow corresponding to image sequence) -->
+        <div class="mb-8 border border-black p-4 no-print">
+            <h3 class="font-bold text-sm mb-3 border-b border-black pb-1 flex justify-between items-center">
+                <span><i class="fas fa-arrows-left-right ml-2"></i> סדר האזורים במבנה המחסן (מימין לשמאל)</span>
+                <span class="text-xs font-normal">נגלל אופקית</span>
+            </h3>
+            <div id="horizontalFlow" class="flex overflow-x-auto gap-3 pb-2 dir-rtl">
+                <!-- Dynamically Populated Cards -->
+            </div>
+        </div>
+
+        <!-- Main Table Section -->
+        <section class="mb-10">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold border-b-2 border-black pb-1">
+                    פירוט ספירת מלאי לפי אזורים
+                </h3>
+                <span class="text-sm text-gray-600 no-print">* לחץ על סכום כדי לערוך אותו ישירות</span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse border border-black text-right text-sm">
+                    <thead>
+                        <tr class="bg-black text-white">
+                            <th class="border border-black p-2.5 text-center w-12">#</th>
+                            <th class="border border-black p-2.5">שם האזור / מיקום</th>
+                            <th class="border border-black p-2.5 text-center w-28">מס' פריטים</th>
+                            <th class="border border-black p-2.5 text-left w-44">סה"כ ערך מלאי (₪)</th>
+                            <th class="border border-black p-2.5 text-center w-24 no-print">פעולות</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                        <!-- Dynamically Generated Table Rows -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-gray-100 font-extrabold text-base border-t-2 border-black">
+                            <td colspan="3" class="border border-black p-3 text-right">סה"כ כללי לרואה חשבון</td>
+                            <td class="border border-black p-3 text-left" id="tableGrandTotal">0.00 ₪</td>
+                            <td class="border border-black p-3 no-print"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <!-- Detailed Breakdown / Itemized Accordions (Optional Expansion per Area) -->
+        <section class="mb-10 no-print" id="itemsBreakdownSection">
+            <h3 class="text-lg font-bold border-b border-black pb-2 mb-4">
+                פירוט פריטים לפי אזור (אופציונלי לספירה פרטנית)
+            </h3>
+            <div id="areaAccordions" class="space-y-4">
+                <!-- Dynamically injected item forms -->
+            </div>
+        </section>
+
+        <!-- Declaration & Signatures Block for CPA -->
+        <section class="border border-black p-6 mt-8">
+            <h4 class="font-bold text-base mb-2 underline">הצהרת מנהל ואישור ספירה</h4>
+            <p class="text-sm mb-6 leading-relaxed">
+                אני החתום מטה, <span class="font-bold" id="signatureManagerName">ירון שמואל</span>, מנהל בחברת <strong>יוחנן ליפשיץ ושות' בע"מ</strong>, מצהיר בזאת כי הספירה המפורטת לעיל בוצעה בפועל והנתונים הרשומים בדו"ח זה משקפים נאמנה את סך המלאי שנמצא בבעלות ובחזקת החברה.
+            </p>
+
+            <div class="grid grid-cols-2 gap-12 pt-4">
+                <div>
+                    <div class="text-xs font-bold mb-1">חתימת מנהל החברה:</div>
+                    <div class="h-12 border-b border-black"></div>
+                    <div class="text-xs mt-1 text-gray-600">תאריך: <span id="sigDate">11/11/2026</span></div>
+                </div>
+                <div>
+                    <div class="text-xs font-bold mb-1">אישור וחותמת רואה חשבון:</div>
+                    <div class="h-12 border-b border-black"></div>
+                    <div class="text-xs mt-1 text-gray-600">תאריך: _______________</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-8 pt-4 border-t border-black flex justify-between items-center text-xs text-gray-600">
+            <div>יוחנן ליפשיץ ושות' בע"מ | דו"ח רשמי לרואה חשבון 2025</div>
+            <div>עמוד 1 מתוך 1</div>
+        </footer>
+
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        // Original 19 areas strictly aligned from right-to-left as requested in the image sequence
+        const initialData = [
+            { id: 1, name: "ימין 1", total: 47020.30, items: [] },
+            { id: 2, name: "ימין 2", total: 20852.07, items: [] },
+            { id: 3, name: "ימין 3", total: 102237.00, items: [] },
+            { id: 4, name: "ימין 4", total: 44140.60, items: [] },
+            { id: 5, name: "ימין 5", total: 47042.74, items: [] },
+            { id: 6, name: "ימין 6", total: 27031.29, items: [] },
+            { id: 7, name: "שמאל 1", total: 88384.00, items: [] },
+            { id: 8, name: "שמאל 2", total: 34200.20, items: [] },
+            { id: 9, name: "שמאל 3", total: 43490.42, items: [] },
+            { id: 10, name: "שמאל 4", total: 43562.13, items: [] },
+            { id: 11, name: "מעבר אמצע", total: 69462.00, items: [] },
+            { id: 12, name: "גלריה", total: 556084.50, items: [] },
+            { id: 13, name: "מסדרון כניסה", total: 81366.00, items: [] },
+            { id: 14, name: "מאחורי דלפק מכירה/קופה", total: 298708.00, items: [] },
+            { id: 15, name: "רפטת מולר+נעלי כבל", total: 12129.26, items: [] },
+            { id: 16, name: "הוצאת סחורה+מדפים", total: 61178.85, items: [] },
+            { id: 17, name: "ארון ברגים", total: 2911.00, items: [] },
+            { id: 18, name: "מגירות סוללות+ארונות קניפקס", total: 19490.30, items: [] },
+            { id: 19, name: "מעבר כבלים+לוחות", total: 146278.10, items: [] }
+        ];
+
+        let inventoryData = JSON.parse(localStorage.getItem('cpa_inventory_2025')) || initialData;
+
+        // Dynamic Date Setup
+        document.addEventListener('DOMContentLoaded', () => {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const formattedDate = now.toLocaleDateString('he-IL', options);
+            
+            document.getElementById('currentDateDisplay').innerText = formattedDate;
+            document.getElementById('sigDate').innerText = now.toLocaleDateString('he-IL');
+
+            // Sync manager name
+            document.getElementById('managerName').addEventListener('input', (e) => {
+                document.getElementById('signatureManagerName').innerText = e.target.value || 'ירון שמואל';
+            });
+
+            renderAll();
+        });
+
+        function formatCurrency(val) {
+            return Number(val || 0).toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function calculateGrandTotal() {
+            return inventoryData.reduce((sum, area) => sum + Number(area.total || 0), 0);
+        }
+
+        function renderAll() {
+            renderTable();
+            renderFlowCards();
+            renderAccordions();
+            updateTotals();
+            saveToStorage();
+        }
+
+        function updateTotals() {
+            const grandTotal = calculateGrandTotal();
+            document.getElementById('grandTotalDisplay').innerText = formatCurrency(grandTotal);
+            document.getElementById('tableGrandTotal').innerText = `${formatCurrency(grandTotal)} ₪`;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
+
+            inventoryData.forEach((area, index) => {
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+
+                tr.innerHTML = `
+                    <td class="border border-black p-2.5 text-center font-bold">${index + 1}</td>
+                    <td class="border border-black p-2.5 font-semibold">
+                        <input type="text" value="${area.name}" onchange="updateAreaName(${area.id}, this.value)" class="editable-input w-full px-1 font-semibold text-black bg-transparent">
+                    </td>
+                    <td class="border border-black p-2.5 text-center text-xs text-gray-700">
+                        ${area.items.length ? `${area.items.length} פריטים` : 'עיקרי'}
+                    </td>
+                    <td class="border border-black p-2.5 text-left font-bold font-mono">
+                        <div class="flex justify-end items-center gap-1">
+                            <span>₪</span>
+                            <input type="number" step="0.01" value="${Number(area.total).toFixed(2)}" 
+                                   onchange="updateAreaTotal(${area.id}, this.value)" 
+                                   class="editable-input text-left w-36 font-bold font-mono p-1 rounded">
+                        </div>
+                    </td>
+                    <td class="border border-black p-1 text-center no-print">
+                        <button onclick="toggleAccordion(${area.id})" class="text-xs px-2 py-1 border border-black hover:bg-black hover:text-white rounded ml-1" title="הוסף/ערוך פריטים">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button onclick="deleteArea(${area.id})" class="text-xs px-2 py-1 text-red-600 hover:bg-red-600 hover:text-white rounded border border-red-600" title="מחק אזור">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderFlowCards() {
+            const flowContainer = document.getElementById('horizontalFlow');
+            flowContainer.innerHTML = '';
+
+            inventoryData.forEach((area, idx) => {
+                const card = document.createElement('div');
+                card.className = "flex-shrink-0 w-44 border border-black p-2.5 bg-white shadow-sm flex flex-col justify-between";
+                card.innerHTML = `
+                    <div>
+                        <div class="text-xs font-bold text-gray-500 mb-1">#${idx + 1} במחסן</div>
+                        <div class="font-bold text-sm text-black truncate" title="${area.name}">${area.name}</div>
+                    </div>
+                    <div class="mt-3 pt-2 border-t border-gray-200 text-left font-mono font-bold text-xs">
+                        ₪ ${formatCurrency(area.total)}
+                    </div>
+                `;
+                flowContainer.appendChild(card);
+            });
+        }
+
+        function renderAccordions() {
+            const container = document.getElementById('areaAccordions');
+            container.innerHTML = '';
+
+            inventoryData.forEach(area => {
+                const box = document.createElement('div');
+                box.className = "border border-gray-400 p-4 bg-gray-50 rounded hidden";
+                box.id = `accordion-${area.id}`;
+
+                let itemsRows = area.items.map((item, itemIdx) => `
+                    <tr class="text-xs">
+                        <td class="p-1 border border-gray-300">
+                            <input type="text" value="${item.name}" onchange="updateItem(${area.id}, ${itemIdx}, 'name', this.value)" class="w-full bg-white border p-1 rounded">
+                        </td>
+                        <td class="p-1 border border-gray-300 w-20">
+                            <input type="number" value="${item.qty}" onchange="updateItem(${area.id}, ${itemIdx}, 'qty', this.value)" class="w-full bg-white border p-1 text-center rounded">
+                        </td>
+                        <td class="p-1 border border-gray-300 w-28">
+                            <input type="number" step="0.01" value="${item.price}" onchange="updateItem(${area.id}, ${itemIdx}, 'price', this.value)" class="w-full bg-white border p-1 text-left rounded font-mono">
+                        </td>
+                        <td class="p-1 border border-gray-300 w-28 text-left font-mono font-bold">
+                            ₪ ${formatCurrency((item.qty || 0) * (item.price || 0))}
+                        </td>
+                        <td class="p-1 border border-gray-300 text-center w-12">
+                            <button onclick="deleteItem(${area.id}, ${itemIdx})" class="text-red-600 hover:text-red-800"><i class="fas fa-times"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                box.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-bold text-sm">ניהול פריטים באזור: <span class="text-blue-900">${area.name}</span></h4>
+                        <button onclick="toggleAccordion(${area.id})" class="text-xs font-bold underline">סגור</button>
+                    </div>
+                    
+                    <table class="w-full border-collapse border border-gray-300 text-right mb-3">
+                        <thead>
+                            <tr class="bg-gray-200 text-xs">
+                                <th class="p-1.5 border border-gray-300">שם פריט / מק"ט</th>
+                                <th class="p-1.5 border border-gray-300 text-center">כמות</th>
+                                <th class="p-1.5 border border-gray-300 text-left">מחיר יחידה (₪)</th>
+                                <th class="p-1.5 border border-gray-300 text-left">סה"כ</th>
+                                <th class="p-1.5 border border-gray-300 text-center">הסר</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsRows || '<tr><td colspan="5" class="text-center p-2 text-xs text-gray-500">אין פריטים מפורטים. הסכום מוגדר ידנית.</td></tr>'}
+                        </tbody>
+                    </table>
+
+                    <button onclick="addItemToArea(${area.id})" class="px-3 py-1 bg-black text-white text-xs font-semibold rounded hover:bg-gray-800">
+                        <i class="fas fa-plus ml-1"></i> הוסף פריט לאזור
+                    </button>
+                `;
+
+                container.appendChild(box);
+            });
+        }
+
+        // Actions & Logic
+        function updateAreaName(id, newName) {
+            const area = inventoryData.find(a => a.id === id);
+            if (area) {
+                area.name = newName;
+                renderAll();
+            }
+        }
+
+        function updateAreaTotal(id, newTotal) {
+            const area = inventoryData.find(a => a.id === id);
+            if (area) {
+                area.total = parseFloat(newTotal) || 0;
+                renderAll();
+            }
+        }
+
+        function addNewArea() {
+            const name = prompt("הכנס שם לאזור החדש:", "אזור חדש");
+            if (!name) return;
+            
+            const total = parseFloat(prompt("הכנס סכום סה\"כ לאזור בש\"ח:", "0")) || 0;
+
+            const newId = Date.now();
+            inventoryData.push({
+                id: newId,
+                name: name,
+                total: total,
+                items: []
+            });
+
+            renderAll();
+        }
+
+        function deleteArea(id) {
+            if (confirm("האם אתה בטוח שברצונך למחוק אזור זה?")) {
+                inventoryData = inventoryData.filter(a => a.id !== id);
+                renderAll();
+            }
+        }
+
+        function toggleAccordion(id) {
+            const el = document.getElementById(`accordion-${id}`);
+            if (el) {
+                el.classList.toggle('hidden');
+            }
+        }
+
+        function addItemToArea(areaId) {
+            const area = inventoryData.find(a => a.id === areaId);
+            if (area) {
+                area.items.push({ name: "פריט חדש", qty: 1, price: 0 });
+                recalculateAreaFromItems(area);
+                renderAll();
+                document.getElementById(`accordion-${areaId}`).classList.remove('hidden');
+            }
+        }
+
+        function updateItem(areaId, itemIdx, field, value) {
+            const area = inventoryData.find(a => a.id === areaId);
+            if (area && area.items[itemIdx]) {
+                area.items[itemIdx][field] = field === 'name' ? value : parseFloat(value) || 0;
+                recalculateAreaFromItems(area);
+                renderAll();
+                document.getElementById(`accordion-${areaId}`).classList.remove('hidden');
+            }
+        }
+
+        function deleteItem(areaId, itemIdx) {
+            const area = inventoryData.find(a => a.id === areaId);
+            if (area) {
+                area.items.splice(itemIdx, 1);
+                recalculateAreaFromItems(area);
+                renderAll();
+                document.getElementById(`accordion-${areaId}`).classList.remove('hidden');
+            }
+        }
+
+        function recalculateAreaFromItems(area) {
+            if (area.items.length > 0) {
+                area.total = area.items.reduce((sum, item) => sum + ((item.qty || 0) * (item.price || 0)), 0);
+            }
+        }
+
+        function resetData() {
+            if (confirm("האם להחזיר את כל האזורים והסכומים לנתוני המקור המקוריים?")) {
+                inventoryData = JSON.parse(JSON.stringify(initialData));
+                renderAll();
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('cpa_inventory_2025', JSON.stringify(inventoryData));
+        }
+    </script>
+</body>
+</html>
